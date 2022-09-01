@@ -19,22 +19,22 @@ pub enum BlockTypeInner {
 }
 
 impl BlockType {
-    /// Creates a new [`BlockType`] from the given [`wasmparser::BlockType`].
+    /// Creates a new [`BlockType`] from the given [`wasmparser::TypeOrFuncType`].
     ///
     /// # Errors
     ///
     /// If the conversion is not valid or unsupported.
     pub(super) fn try_from_wasmparser(
-        type_or_func_type: wasmparser::BlockType,
+        type_or_func_type: wasmparser::TypeOrFuncType,
         res: ModuleResources,
     ) -> Result<Self, ModuleError> {
         let block_type = match type_or_func_type {
-            wasmparser::BlockType::Empty => Self::empty(),
-            wasmparser::BlockType::Type(return_type) => {
+            wasmparser::TypeOrFuncType::Type(wasmparser::Type::EmptyBlockType) => Self::empty(),
+            wasmparser::TypeOrFuncType::Type(return_type) => {
                 let return_type = value_type_from_wasmparser(&return_type)?;
                 Self::returns(return_type)
             }
-            wasmparser::BlockType::FuncType(func_type_idx) => {
+            wasmparser::TypeOrFuncType::FuncType(func_type_idx) => {
                 let dedup_func_type = res.get_func_type(FuncTypeIdx(func_type_idx));
                 Self::func_type(dedup_func_type)
             }

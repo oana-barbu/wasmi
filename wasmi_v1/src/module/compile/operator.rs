@@ -4,7 +4,7 @@ use crate::{
     module::{export::TableIdx, import::FuncTypeIdx, FuncIdx, GlobalIdx, MemoryIdx},
     ModuleError,
 };
-use wasmparser::{Ieee32, Ieee64};
+use wasmparser::{Ieee32, Ieee64, TypeOrFuncType};
 
 impl<'alloc, 'parser> FunctionTranslator<'alloc, 'parser> {
     /// Translate a Wasm `nop` (no operation) instruction.
@@ -17,21 +17,21 @@ impl<'alloc, 'parser> FunctionTranslator<'alloc, 'parser> {
     }
 
     /// Translate a Wasm `block` control flow operator.
-    pub fn translate_block(&mut self, ty: wasmparser::BlockType) -> Result<(), ModuleError> {
+    pub fn translate_block(&mut self, ty: TypeOrFuncType) -> Result<(), ModuleError> {
         let block_type = BlockType::try_from_wasmparser(ty, self.res)?;
         self.func_builder.translate_block(block_type)?;
         Ok(())
     }
 
     /// Translate a Wasm `loop` control flow operator.
-    pub fn translate_loop(&mut self, ty: wasmparser::BlockType) -> Result<(), ModuleError> {
+    pub fn translate_loop(&mut self, ty: TypeOrFuncType) -> Result<(), ModuleError> {
         let block_type = BlockType::try_from_wasmparser(ty, self.res)?;
         self.func_builder.translate_loop(block_type)?;
         Ok(())
     }
 
     /// Translate a Wasm `if` control flow operator.
-    pub fn translate_if(&mut self, ty: wasmparser::BlockType) -> Result<(), ModuleError> {
+    pub fn translate_if(&mut self, ty: TypeOrFuncType) -> Result<(), ModuleError> {
         let block_type = BlockType::try_from_wasmparser(ty, self.res)?;
         self.func_builder.translate_if(block_type)?;
         Ok(())
@@ -117,7 +117,10 @@ impl<'alloc, 'parser> FunctionTranslator<'alloc, 'parser> {
     }
 
     /// Translate a Wasm `i32.load` instruction.
-    pub fn translate_i32_load(&mut self, memarg: wasmparser::MemArg) -> Result<(), ModuleError> {
+    pub fn translate_i32_load(
+        &mut self,
+        memarg: wasmparser::MemoryImmediate,
+    ) -> Result<(), ModuleError> {
         let memory_idx = MemoryIdx(memarg.memory);
         let offset = memarg.offset as u32;
         self.func_builder.translate_i32_load(memory_idx, offset)?;
@@ -125,7 +128,10 @@ impl<'alloc, 'parser> FunctionTranslator<'alloc, 'parser> {
     }
 
     /// Translate a Wasm `i64.load` instruction.
-    pub fn translate_i64_load(&mut self, memarg: wasmparser::MemArg) -> Result<(), ModuleError> {
+    pub fn translate_i64_load(
+        &mut self,
+        memarg: wasmparser::MemoryImmediate,
+    ) -> Result<(), ModuleError> {
         let memory_idx = MemoryIdx(memarg.memory);
         let offset = memarg.offset as u32;
         self.func_builder.translate_i64_load(memory_idx, offset)?;
@@ -133,7 +139,10 @@ impl<'alloc, 'parser> FunctionTranslator<'alloc, 'parser> {
     }
 
     /// Translate a Wasm `f32.load` instruction.
-    pub fn translate_f32_load(&mut self, memarg: wasmparser::MemArg) -> Result<(), ModuleError> {
+    pub fn translate_f32_load(
+        &mut self,
+        memarg: wasmparser::MemoryImmediate,
+    ) -> Result<(), ModuleError> {
         let memory_idx = MemoryIdx(memarg.memory);
         let offset = memarg.offset as u32;
         self.func_builder.translate_f32_load(memory_idx, offset)?;
@@ -141,7 +150,10 @@ impl<'alloc, 'parser> FunctionTranslator<'alloc, 'parser> {
     }
 
     /// Translate a Wasm `f64.load` instruction.
-    pub fn translate_f64_load(&mut self, memarg: wasmparser::MemArg) -> Result<(), ModuleError> {
+    pub fn translate_f64_load(
+        &mut self,
+        memarg: wasmparser::MemoryImmediate,
+    ) -> Result<(), ModuleError> {
         let memory_idx = MemoryIdx(memarg.memory);
         let offset = memarg.offset as u32;
         self.func_builder.translate_f64_load(memory_idx, offset)?;
@@ -149,7 +161,10 @@ impl<'alloc, 'parser> FunctionTranslator<'alloc, 'parser> {
     }
 
     /// Translate a Wasm `i32.load_i8` instruction.
-    pub fn translate_i32_load_i8(&mut self, memarg: wasmparser::MemArg) -> Result<(), ModuleError> {
+    pub fn translate_i32_load_i8(
+        &mut self,
+        memarg: wasmparser::MemoryImmediate,
+    ) -> Result<(), ModuleError> {
         let memory_idx = MemoryIdx(memarg.memory);
         let offset = memarg.offset as u32;
         self.func_builder
@@ -158,7 +173,10 @@ impl<'alloc, 'parser> FunctionTranslator<'alloc, 'parser> {
     }
 
     /// Translate a Wasm `i32.load_u8` instruction.
-    pub fn translate_i32_load_u8(&mut self, memarg: wasmparser::MemArg) -> Result<(), ModuleError> {
+    pub fn translate_i32_load_u8(
+        &mut self,
+        memarg: wasmparser::MemoryImmediate,
+    ) -> Result<(), ModuleError> {
         let memory_idx = MemoryIdx(memarg.memory);
         let offset = memarg.offset as u32;
         self.func_builder
@@ -169,7 +187,7 @@ impl<'alloc, 'parser> FunctionTranslator<'alloc, 'parser> {
     /// Translate a Wasm `i32.load_i16` instruction.
     pub fn translate_i32_load_i16(
         &mut self,
-        memarg: wasmparser::MemArg,
+        memarg: wasmparser::MemoryImmediate,
     ) -> Result<(), ModuleError> {
         let memory_idx = MemoryIdx(memarg.memory);
         let offset = memarg.offset as u32;
@@ -181,7 +199,7 @@ impl<'alloc, 'parser> FunctionTranslator<'alloc, 'parser> {
     /// Translate a Wasm `i32.load_u16` instruction.
     pub fn translate_i32_load_u16(
         &mut self,
-        memarg: wasmparser::MemArg,
+        memarg: wasmparser::MemoryImmediate,
     ) -> Result<(), ModuleError> {
         let memory_idx = MemoryIdx(memarg.memory);
         let offset = memarg.offset as u32;
@@ -191,7 +209,10 @@ impl<'alloc, 'parser> FunctionTranslator<'alloc, 'parser> {
     }
 
     /// Translate a Wasm `i64.load_i8` instruction.
-    pub fn translate_i64_load_i8(&mut self, memarg: wasmparser::MemArg) -> Result<(), ModuleError> {
+    pub fn translate_i64_load_i8(
+        &mut self,
+        memarg: wasmparser::MemoryImmediate,
+    ) -> Result<(), ModuleError> {
         let memory_idx = MemoryIdx(memarg.memory);
         let offset = memarg.offset as u32;
         self.func_builder
@@ -200,7 +221,10 @@ impl<'alloc, 'parser> FunctionTranslator<'alloc, 'parser> {
     }
 
     /// Translate a Wasm `i64.load_u8` instruction.
-    pub fn translate_i64_load_u8(&mut self, memarg: wasmparser::MemArg) -> Result<(), ModuleError> {
+    pub fn translate_i64_load_u8(
+        &mut self,
+        memarg: wasmparser::MemoryImmediate,
+    ) -> Result<(), ModuleError> {
         let memory_idx = MemoryIdx(memarg.memory);
         let offset = memarg.offset as u32;
         self.func_builder
@@ -211,7 +235,7 @@ impl<'alloc, 'parser> FunctionTranslator<'alloc, 'parser> {
     /// Translate a Wasm `i64.load_i16` instruction.
     pub fn translate_i64_load_i16(
         &mut self,
-        memarg: wasmparser::MemArg,
+        memarg: wasmparser::MemoryImmediate,
     ) -> Result<(), ModuleError> {
         let memory_idx = MemoryIdx(memarg.memory);
         let offset = memarg.offset as u32;
@@ -223,7 +247,7 @@ impl<'alloc, 'parser> FunctionTranslator<'alloc, 'parser> {
     /// Translate a Wasm `i64.load_u16` instruction.
     pub fn translate_i64_load_u16(
         &mut self,
-        memarg: wasmparser::MemArg,
+        memarg: wasmparser::MemoryImmediate,
     ) -> Result<(), ModuleError> {
         let memory_idx = MemoryIdx(memarg.memory);
         let offset = memarg.offset as u32;
@@ -235,7 +259,7 @@ impl<'alloc, 'parser> FunctionTranslator<'alloc, 'parser> {
     /// Translate a Wasm `i64.load_i32` instruction.
     pub fn translate_i64_load_i32(
         &mut self,
-        memarg: wasmparser::MemArg,
+        memarg: wasmparser::MemoryImmediate,
     ) -> Result<(), ModuleError> {
         let memory_idx = MemoryIdx(memarg.memory);
         let offset = memarg.offset as u32;
@@ -247,7 +271,7 @@ impl<'alloc, 'parser> FunctionTranslator<'alloc, 'parser> {
     /// Translate a Wasm `i64.load_u32` instruction.
     pub fn translate_i64_load_u32(
         &mut self,
-        memarg: wasmparser::MemArg,
+        memarg: wasmparser::MemoryImmediate,
     ) -> Result<(), ModuleError> {
         let memory_idx = MemoryIdx(memarg.memory);
         let offset = memarg.offset as u32;
@@ -257,7 +281,10 @@ impl<'alloc, 'parser> FunctionTranslator<'alloc, 'parser> {
     }
 
     /// Translate a Wasm `i32.store` instruction.
-    pub fn translate_i32_store(&mut self, memarg: wasmparser::MemArg) -> Result<(), ModuleError> {
+    pub fn translate_i32_store(
+        &mut self,
+        memarg: wasmparser::MemoryImmediate,
+    ) -> Result<(), ModuleError> {
         let memory_idx = MemoryIdx(memarg.memory);
         let offset = memarg.offset as u32;
         self.func_builder.translate_i32_store(memory_idx, offset)?;
@@ -265,7 +292,10 @@ impl<'alloc, 'parser> FunctionTranslator<'alloc, 'parser> {
     }
 
     /// Translate a Wasm `i64.store` instruction.
-    pub fn translate_i64_store(&mut self, memarg: wasmparser::MemArg) -> Result<(), ModuleError> {
+    pub fn translate_i64_store(
+        &mut self,
+        memarg: wasmparser::MemoryImmediate,
+    ) -> Result<(), ModuleError> {
         let memory_idx = MemoryIdx(memarg.memory);
         let offset = memarg.offset as u32;
         self.func_builder.translate_i64_store(memory_idx, offset)?;
@@ -273,7 +303,10 @@ impl<'alloc, 'parser> FunctionTranslator<'alloc, 'parser> {
     }
 
     /// Translate a Wasm `f32.store` instruction.
-    pub fn translate_f32_store(&mut self, memarg: wasmparser::MemArg) -> Result<(), ModuleError> {
+    pub fn translate_f32_store(
+        &mut self,
+        memarg: wasmparser::MemoryImmediate,
+    ) -> Result<(), ModuleError> {
         let memory_idx = MemoryIdx(memarg.memory);
         let offset = memarg.offset as u32;
         self.func_builder.translate_f32_store(memory_idx, offset)?;
@@ -281,7 +314,10 @@ impl<'alloc, 'parser> FunctionTranslator<'alloc, 'parser> {
     }
 
     /// Translate a Wasm `f64.store` instruction.
-    pub fn translate_f64_store(&mut self, memarg: wasmparser::MemArg) -> Result<(), ModuleError> {
+    pub fn translate_f64_store(
+        &mut self,
+        memarg: wasmparser::MemoryImmediate,
+    ) -> Result<(), ModuleError> {
         let memory_idx = MemoryIdx(memarg.memory);
         let offset = memarg.offset as u32;
         self.func_builder.translate_f64_store(memory_idx, offset)?;
@@ -291,7 +327,7 @@ impl<'alloc, 'parser> FunctionTranslator<'alloc, 'parser> {
     /// Translate a Wasm `i32.store_i8` instruction.
     pub fn translate_i32_store_i8(
         &mut self,
-        memarg: wasmparser::MemArg,
+        memarg: wasmparser::MemoryImmediate,
     ) -> Result<(), ModuleError> {
         let memory_idx = MemoryIdx(memarg.memory);
         let offset = memarg.offset as u32;
@@ -303,7 +339,7 @@ impl<'alloc, 'parser> FunctionTranslator<'alloc, 'parser> {
     /// Translate a Wasm `i32.store_i16` instruction.
     pub fn translate_i32_store_i16(
         &mut self,
-        memarg: wasmparser::MemArg,
+        memarg: wasmparser::MemoryImmediate,
     ) -> Result<(), ModuleError> {
         let memory_idx = MemoryIdx(memarg.memory);
         let offset = memarg.offset as u32;
@@ -315,7 +351,7 @@ impl<'alloc, 'parser> FunctionTranslator<'alloc, 'parser> {
     /// Translate a Wasm `i64.store_i8` instruction.
     pub fn translate_i64_store_i8(
         &mut self,
-        memarg: wasmparser::MemArg,
+        memarg: wasmparser::MemoryImmediate,
     ) -> Result<(), ModuleError> {
         let memory_idx = MemoryIdx(memarg.memory);
         let offset = memarg.offset as u32;
@@ -327,7 +363,7 @@ impl<'alloc, 'parser> FunctionTranslator<'alloc, 'parser> {
     /// Translate a Wasm `i64.store_i16` instruction.
     pub fn translate_i64_store_i16(
         &mut self,
-        memarg: wasmparser::MemArg,
+        memarg: wasmparser::MemoryImmediate,
     ) -> Result<(), ModuleError> {
         let memory_idx = MemoryIdx(memarg.memory);
         let offset = memarg.offset as u32;
@@ -339,7 +375,7 @@ impl<'alloc, 'parser> FunctionTranslator<'alloc, 'parser> {
     /// Translate a Wasm `i64.store_i32` instruction.
     pub fn translate_i64_store_i32(
         &mut self,
-        memarg: wasmparser::MemArg,
+        memarg: wasmparser::MemoryImmediate,
     ) -> Result<(), ModuleError> {
         let memory_idx = MemoryIdx(memarg.memory);
         let offset = memarg.offset as u32;

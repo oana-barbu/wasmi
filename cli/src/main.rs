@@ -1,3 +1,5 @@
+#![feature(format_args_capture)]
+
 use anyhow::{anyhow, bail, Result};
 use clap::Parser;
 use core::fmt::Write;

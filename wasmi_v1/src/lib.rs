@@ -69,6 +69,8 @@
 //! }
 //! ```
 
+#![feature(format_args_capture)]
+
 #![cfg_attr(not(feature = "std"), no_std)]
 #![warn(clippy::cast_lossless)]
 
